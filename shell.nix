@@ -22,5 +22,6 @@ mkShell {
     nodejs-16_x # for Pulumi
     pulumi-bin'
     # saml2aws
+    wireguard-tools
   ];
 }
