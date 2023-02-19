@@ -1,3 +1,5 @@
 name: mondoxs2
 runtime: nodejs
-description: A minimal AWS TypeScript Pulumi program
+description: A minimal AWS TypeScript Pulumi program for MondoXS WireGuard
+options:
+  refresh: always

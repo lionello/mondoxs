@@ -168,6 +168,20 @@ const instanceRole = new aws.iam.Role("instance-role", {
         ],
       }),
     },
+    // TODO: update a Route53 record on boot
+    // {
+    //   name: "UpdateRoute53",
+    //   policy: pulumi.jsonStringify({
+    //     Version: "2012-10-17",
+    //     Statement: [
+    //       {
+    //         Effect: "Allow",
+    //         Action: "route53:ChangeResourceRecordSets",
+    //         Resource: config.require("route53ZoneArn"),
+    //       },
+    //     ],
+    //   }),
+    // }
   ],
 });
 
@@ -177,9 +191,11 @@ const instance_profile = new aws.iam.InstanceProfile("instance_profile", {
 
 const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
   ami: imageId,
+  blockDurationMinutes: 3 * 60, // 3 hours
   iamInstanceProfile: instance_profile.name,
   instanceType: "t3a.nano", // TODO: use Spot Fleet to get the cheapest instance type
   keyName: keyPair.keyName,
+  spotType: "one-time",
   userData,
   vpcSecurityGroupIds: [sg.id],
   waitForFulfillment: true,
