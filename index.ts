@@ -191,7 +191,7 @@ const instance_profile = new aws.iam.InstanceProfile("instance_profile", {
 
 const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
   ami: imageId,
-  blockDurationMinutes: 3 * 60, // 3 hours
+  // blockDurationMinutes: 3 * 60, // 3 hours
   iamInstanceProfile: instance_profile.name,
   instanceType: "t3a.nano", // TODO: use Spot Fleet to get the cheapest instance type
   keyName: keyPair.keyName,
