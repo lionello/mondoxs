@@ -1,6 +1,6 @@
 config:
   aws:profile: lionello
-  aws:region: eu-south-1 # Milan
+  aws:region: ca-central-1
   mondoxs2:ifAddress: "192.168.9.1/24"
   mondoxs2:peers:
     - allowedIPs: "192.168.9.2/32"
