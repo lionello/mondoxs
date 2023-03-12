@@ -205,21 +205,24 @@ export const publicIp = spotInstance.publicIp;
 export const endpoint = pulumi.interpolate`${publicIp}:${wgPort}`;
 export const sshUser = pulumi.interpolate`ec2-user@${publicIp}`;
 
-const domain = config.require("domain") || "example.com";
-
-const route53ZoneId =
-  config.get("route53ZoneId") ||
-  aws.route53.getZoneOutput({
-    name: domain,
-    privateZone: false,
-  }).id;
-
 const STACK = pulumi.getStack();
+const domain = config.get("domain");
 
-const record = new aws.route53.Record("record", {
-  name: `${STACK}.${domain}.`,
-  type: "CNAME",
-  ttl: 60,
-  zoneId: route53ZoneId,
-  records: [spotInstance.publicDns],
-});
+export const fqdn = domain ? `${STACK}.${domain}.` : undefined;
+
+if (fqdn) {
+  const route53ZoneId =
+    config.get("route53ZoneId") ||
+    aws.route53.getZoneOutput({
+      name: domain,
+      privateZone: false,
+    }).id;
+
+  const record = new aws.route53.Record("record", {
+    name: fqdn,
+    type: "CNAME",
+    ttl: 60,
+    zoneId: route53ZoneId,
+    records: [spotInstance.publicDns],
+  });
+}
