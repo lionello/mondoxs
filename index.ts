@@ -189,14 +189,17 @@ const instance_profile = new aws.iam.InstanceProfile("instance_profile", {
   role: instanceRole.name,
 });
 
+const DURATION_MIN = 2 * 60; // 2 hours
+
 const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
   ami: imageId,
-  // blockDurationMinutes: 3 * 60, // 3 hours
+  // blockDurationMinutes: DURATION_MIN, // NOT supported
   iamInstanceProfile: instance_profile.name,
   instanceType: "t3a.nano", // TODO: use Spot Fleet to get the cheapest instance type
   keyName: keyPair.keyName,
   spotType: "one-time",
   userData,
+  validUntil: new Date(Date.now() + DURATION_MIN * 60 * 1000).toISOString(),
   vpcSecurityGroupIds: [sg.id],
   waitForFulfillment: true,
 });
