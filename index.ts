@@ -205,6 +205,7 @@ const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
 });
 
 export const publicIp = spotInstance.publicIp;
+export const spotUrn = spotInstance.urn;
 export const endpoint = pulumi.interpolate`${publicIp}:${wgPort}`;
 export const sshUser = pulumi.interpolate`ec2-user@${publicIp}`;
 
