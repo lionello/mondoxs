@@ -202,6 +202,8 @@ const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
   validUntil: new Date(Date.now() + DURATION_MIN * 60 * 1000).toISOString(),
   vpcSecurityGroupIds: [sg.id],
   waitForFulfillment: true,
+}, {
+  ignoreChanges: ["validUntil"],
 });
 
 export const publicIp = spotInstance.publicIp;
