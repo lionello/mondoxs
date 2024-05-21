@@ -195,7 +195,7 @@ const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
   ami: imageId,
   // blockDurationMinutes: DURATION_MIN, // NOT supported
   iamInstanceProfile: instance_profile.name,
-  instanceType: "t3a.nano", // TODO: use Spot Fleet to get the cheapest instance type
+  instanceType: "t3.nano", // TODO: use Spot Fleet to get the cheapest instance type
   keyName: keyPair.keyName,
   spotType: "one-time",
   userData,
