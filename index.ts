@@ -1,5 +1,6 @@
-import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
+import { sharedKey } from "curve25519-js";
 import assert = require("assert");
 
 interface Peer {
@@ -13,10 +14,29 @@ export const region = aws.config.region;
 assert(region);
 export const wgPort = config.getNumber("wgPort") || 53; // TODO: randomize
 export const sshCidr = config.require("sshCidr"); // TODO: make this optional
+
 const ifAddress = config.require("ifAddress");
 const privateKey = config.getSecret("privateKey");
 const peers = config.requireObject<Peer[]>("peers") || [];
 assert(peers.length > 0, "At least one peer is required");
+const STACK = pulumi.getStack();
+const domain = config.get("domain");
+
+export const fqdn = domain ? `${STACK}.${domain}` : undefined;
+
+function curve25519PubFromPriv(privBase64: string): string {
+  const priv = Buffer.from(privBase64, "base64");
+  let _9 = new Uint8Array(32);
+  _9[0] = 9;
+  return Buffer.from(sharedKey(priv, _9)).toString("base64");
+}
+
+assert.equal(
+  curve25519PubFromPriv("SH8Xsdfjql5wWIvne6jyzFb3vAS6045GI6U4mhaYjWI="),
+  "RJPdAPUoLN/56U7UrjjlMuxhEIZQBvH51DuNJwM+wXg="
+);
+
+export const publicKey = privateKey?.apply((sk) => curve25519PubFromPriv(sk!));
 
 // Find the latest Amazon Linux 2 AMI for x64, EBS-backed instances.
 const ami = aws.ec2.getAmiOutput({
@@ -191,30 +211,29 @@ const instance_profile = new aws.iam.InstanceProfile("instance_profile", {
 
 const DURATION_MIN = 2 * 60; // 2 hours
 
-const spotInstance = new aws.ec2.SpotInstanceRequest("spotInstance", {
-  ami: imageId,
-  // blockDurationMinutes: DURATION_MIN, // NOT supported
-  iamInstanceProfile: instance_profile.name,
-  instanceType: "t3.nano", // TODO: use Spot Fleet to get the cheapest instance type
-  keyName: keyPair.keyName,
-  spotType: "one-time",
-  userData,
-  validUntil: new Date(Date.now() + DURATION_MIN * 60 * 1000).toISOString(),
-  vpcSecurityGroupIds: [sg.id],
-  waitForFulfillment: true,
-}, {
-  ignoreChanges: ["validUntil"],
-});
+const spotInstance = new aws.ec2.SpotInstanceRequest(
+  "spotInstance",
+  {
+    ami: imageId,
+    // blockDurationMinutes: DURATION_MIN, // NOT supported
+    iamInstanceProfile: instance_profile.name,
+    instanceType: "t3.nano", // TODO: use Spot Fleet to get the cheapest instance type
+    keyName: keyPair.keyName,
+    spotType: "one-time",
+    userData,
+    validUntil: new Date(Date.now() + DURATION_MIN * 60 * 1000).toISOString(),
+    vpcSecurityGroupIds: [sg.id],
+    waitForFulfillment: true,
+  },
+  {
+    ignoreChanges: ["validUntil"],
+  }
+);
 
 export const publicIp = spotInstance.publicIp;
 export const spotUrn = spotInstance.urn;
-export const endpoint = pulumi.interpolate`${publicIp}:${wgPort}`;
-export const sshUser = pulumi.interpolate`ec2-user@${publicIp}`;
-
-const STACK = pulumi.getStack();
-const domain = config.get("domain");
-
-export const fqdn = domain ? `${STACK}.${domain}.` : undefined;
+export const endpoint = pulumi.interpolate`${fqdn || publicIp}:${wgPort}`;
+export const sshUser = pulumi.interpolate`ec2-user@${fqdn || publicIp}`;
 
 if (fqdn) {
   const route53ZoneId =
@@ -232,3 +251,17 @@ if (fqdn) {
     records: [spotInstance.publicDns],
   });
 }
+
+export const tunnelConfig = pulumi.interpolate`[Interface]
+PrivateKey = … # priv key of ${peers[0].publicKey}
+Address = ${peers[0].allowedIPs}
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = ${publicKey}
+AllowedIPs = 0.0.0.0/0
+Endpoint = ${endpoint}
+PersistentKeepalive = 25
+`;
+
+tunnelConfig.apply(console.log);
