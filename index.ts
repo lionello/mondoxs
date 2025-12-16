@@ -254,9 +254,10 @@ if (fqdn) {
   });
 }
 
-export const tunnelConfig = pulumi.interpolate`[Interface]
-PrivateKey = … # priv key of ${peers[0].publicKey}
-Address = ${peers[0].allowedIPs}
+export const tunnelConfigs = peers.map(
+  (peer) => pulumi.interpolate`[Interface]
+PrivateKey = … # priv key of ${peer.publicKey}
+Address = ${peer.allowedIPs}
 DNS = 1.1.1.1
 
 [Peer]
@@ -264,6 +265,5 @@ PublicKey = ${publicKey}
 AllowedIPs = 0.0.0.0/0
 Endpoint = ${endpoint}
 PersistentKeepalive = 25
-`;
-
-tunnelConfig.apply(console.log);
+`
+);
