@@ -16,7 +16,7 @@ export const wgPort = config.getNumber("wgPort") || 53; // TODO: randomize
 export const sshCidr = config.require("sshCidr"); // TODO: make this optional
 
 const ifAddress = config.require("ifAddress");
-const privateKey = config.getSecret("privateKey");
+const privateKey = config.requireSecret("privateKey");
 const peers = config.requireObject<Peer[]>("peers") || [];
 assert(peers.length > 0, "At least one peer is required");
 const STACK = pulumi.getStack();
@@ -36,7 +36,9 @@ assert.equal(
   "RJPdAPUoLN/56U7UrjjlMuxhEIZQBvH51DuNJwM+wXg="
 );
 
-export const publicKey = privateKey?.apply((sk) => curve25519PubFromPriv(sk!));
+export const publicKey = pulumi.unsecret(
+  privateKey.apply((sk) => curve25519PubFromPriv(sk!))
+);
 
 // Find the latest Amazon Linux 2 AMI for x64, EBS-backed instances.
 const ami = aws.ec2.getAmiOutput({
