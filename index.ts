@@ -219,10 +219,12 @@ const spotInstance = new aws.ec2.SpotInstanceRequest(
     ami: imageId,
     // blockDurationMinutes: DURATION_MIN, // NOT supported
     iamInstanceProfile: instance_profile.name,
+    instanceInitiatedShutdownBehavior: "terminate",
     instanceType: "t3.nano", // TODO: use Spot Fleet to get the cheapest instance type
     keyName: keyPair.keyName,
     spotType: "one-time",
     userData,
+    userDataReplaceOnChange: true,
     validUntil: new Date(Date.now() + DURATION_MIN * 60 * 1000).toISOString(),
     vpcSecurityGroupIds: [sg.id],
     waitForFulfillment: true,
