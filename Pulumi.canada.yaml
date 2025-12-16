@@ -6,12 +6,12 @@ config:
   mondoxs2:peers:
     - allowedIPs: "192.168.9.2/32"
       # presharedKey: optional
-      publicKey: bH4DXJh9zbWef9PFX/kjuL+de+Ph6N25/YH3FnwGixg= # lio-mbpm1
+      publicKey: 2+8sENBO/6Rqjz20I2z/o7LQst9SmldARVJLu4v5H3k= # lio-mbpm1
     - allowedIPs: "192.168.9.3/32"
       publicKey: R5WGMkQ0SEB46m6ub5nbSL2qHRV9/lVFnbbXGbnnMyw= # openwrt
     - allowedIPs: "192.168.9.4/32"
-      publicKey: +dT4zemTOQxxzpEzQojvfPYRpdV98KhpXyHHrty6A1s= # Christine
-  mondoxs2:privateKey: #6K9CvEOi1GPz8+aG3+TtV7LU6bkjMYFDb2VeTZ6NgSM=
+      publicKey: trem3gjWfJyQ+iXJaj+fSB1qbaOl+NIyx00/cD0SMns= # Christine (old Air)
+  mondoxs2:privateKey: # pub = 6K9CvEOi1GPz8+aG3+TtV7LU6bkjMYFDb2VeTZ6NgSM=
     secure: AAABANm0jb2VIEfUfNy0d7EcVtJq7F+iQVL7vEKCVR2HGEiYo1BoZS+NZWrWgwqnzO4TejgofJMGmWiYVcP3hjaU4jE+AYTpYp7xfQ==
   mondoxs2:sshCidr: "23.16.26.12/30" #"108.172.84.0/30" # "50.68.15.0/30" #jj # "69.196.92.0/30" #WeWork
   mondoxs2:sshPublicKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCiQ+19nble+tgUPpp/tPjfBnJYbSdN7hLACRrxgM3OsMmZtK3xMeGkmP6Vc8GU1qsfMvZgTRtJ0WhQAUTxAgFhm90vq2BGF2IjalqbQcV4W0g7O2u4bDGj1usY1Pwdp75vBeZOBAvYcv+9sGeq2w2aIP99aNL/ojJE4UlSwvs3wVNvdazPAo4y/6ltyNCskxjAfdAk4cFW/Fljy4qlrq6iylMzxTav8gT0lnlX0BE0o0gac8Sy6c+yk62oecXlYB8orCnbG62dWfwmKPWx4A/lC2u0KwDJb95csqr0GmFizRznrZA6Dgyw/igQlFNOcSsddee/kmLOyhgjOTjnnwwI0bomrwVh9A2jk6n+KZywjk2I5h5PsfIlkjQCD78Jc4v1DgfrAQd8AN+UzAIsqKyFVhi3iI/TbByiLCRfg9Til6Z8bNpWTqUaX3p+C1CJmUKOR9h6/xxHYo32L5OVUPZuluoU0MU3ISCsaaephQSUdPH8vkkJt0rmNcILvI2Q3NU=
