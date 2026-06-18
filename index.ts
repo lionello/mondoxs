@@ -13,11 +13,12 @@ const config = new pulumi.Config();
 export const region = aws.config.region;
 assert(region);
 export const wgPort = config.getNumber("wgPort") || 53; // TODO: randomize
-export const sshCidr = config.require("sshCidr"); // TODO: make this optional
+export const sshCidrs = config.getObject<string[]>("sshCidrs");
+export const sshPort = config.getNumber("sshPort") || 22;
 
 const ifAddress = config.require("ifAddress");
 const privateKey = config.requireSecret("privateKey");
-const peers = config.requireObject<Peer[]>("peers") || [];
+const peers = config.requireObject<Peer[]>("peers");
 assert(peers.length > 0, "At least one peer is required");
 const STACK = pulumi.getStack();
 const domain = config.get("domain");
@@ -33,11 +34,11 @@ function curve25519PubFromPriv(privBase64: string): string {
 
 assert.equal(
   curve25519PubFromPriv("SH8Xsdfjql5wWIvne6jyzFb3vAS6045GI6U4mhaYjWI="),
-  "RJPdAPUoLN/56U7UrjjlMuxhEIZQBvH51DuNJwM+wXg="
+  "RJPdAPUoLN/56U7UrjjlMuxhEIZQBvH51DuNJwM+wXg=",
 );
 
 export const publicKey = pulumi.unsecret(
-  privateKey.apply((sk) => curve25519PubFromPriv(sk!))
+  privateKey.apply((sk) => curve25519PubFromPriv(sk!)),
 );
 
 // Find the latest Amazon Linux 2 AMI for x64, EBS-backed instances.
@@ -72,7 +73,6 @@ export const imageId = ami.id;
 
 const sg = new aws.ec2.SecurityGroup("secgroup", {
   ingress: [
-    { protocol: "tcp", fromPort: 22, toPort: 22, cidrBlocks: [sshCidr] }, // TODO: only when SSH is enabled
     {
       protocol: "udp",
       fromPort: wgPort,
@@ -89,6 +89,16 @@ const sg = new aws.ec2.SecurityGroup("secgroup", {
       toPort: -1,
       cidrBlocks: ["0.0.0.0/0"],
     },
+    ...(sshCidrs?.length
+      ? [
+          {
+            protocol: "tcp",
+            fromPort: sshPort,
+            toPort: sshPort,
+            cidrBlocks: sshCidrs,
+          },
+        ]
+      : []),
   ],
   egress: [
     { protocol: "-1", fromPort: 0, toPort: 0, cidrBlocks: ["0.0.0.0/0"] },
@@ -121,7 +131,7 @@ const secretVersion = new aws.secretsmanager.SecretVersion(
   {
     parent: pkSecret,
     aliases: [{ parent: pulumi.rootStackResource }],
-  }
+  },
 );
 
 export const secretId = pkSecret.name;
@@ -231,7 +241,7 @@ const spotInstance = new aws.ec2.SpotInstanceRequest(
   },
   {
     ignoreChanges: ["validUntil"],
-  }
+  },
 );
 
 export const publicIp = spotInstance.publicIp;
@@ -267,5 +277,5 @@ PublicKey = ${publicKey}
 AllowedIPs = 0.0.0.0/0
 Endpoint = ${endpoint}
 PersistentKeepalive = 25
-`
+`,
 );
