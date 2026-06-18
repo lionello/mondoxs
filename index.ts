@@ -148,9 +148,9 @@ write_files:
       ${peers.flatMap((peer) => peerConfig(peer).split("\n")).join("\n      ")}
 
 runcmd:
+  # WireGuard is built into the amzn2 kernel-5.10 AMI; only the userspace tools are needed.
   - amazon-linux-extras install -y epel
-  - curl -o "/etc/yum.repos.d/wireguard.repo" "https://copr.fedorainfracloud.org/coprs/jdoss/wireguard/repo/epel-7/jdoss-wireguard-epel-7.repo"
-  - yum install -y wireguard-dkms wireguard-tools
+  - yum install -y wireguard-tools
   - export PK=$(aws secretsmanager get-secret-value --region ${region} --secret-id ${
   pkSecret.id
 } --query SecretString --output text || wg genkey)
