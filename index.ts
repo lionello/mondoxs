@@ -132,7 +132,7 @@ export const secretId = pkSecret.name;
 const userData = pulumi.interpolate`#cloud-config
 package_update: false # Update apt or yum database on first boot (default: false)
 package_upgrade: false # Upgrade existing packages on first boot (default: false)
-repo_upgrade: security # Upgrade the instance on first boot (default: security)
+repo_upgrade: none # Don't upgrade the instance on first boot (default: security)
 
 write_files:
   - path: /etc/wireguard/wg0.conf
